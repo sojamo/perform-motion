@@ -1,0 +1,29 @@
+{
+  "name": "perform-motion",
+  "version": "1.0.0",
+  "description": "A project that looks at motion sensors in a collaborative performance setting.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./bin/cli.js",
+    "dev": "nodemon --exec \"npm run start\"",
+    "daemon": "nohup npm run start > logs/out.log 2>&1 & echo $! > bt-ws-osc.pid"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com-sojamo:sojamo/perform-motion.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@abandonware/noble": "^1.9.2-26",
+    "commander": "^13.1.0",
+    "dotenv": "^16.5.0",
+    "node-osc": "^9.1.5",
+    "ws": "^8.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
