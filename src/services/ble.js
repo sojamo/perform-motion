@@ -19,8 +19,11 @@ export default class BLEService extends EventEmitter {
     // When using this application on a different macbook, these
     // uuids will be different and will need to be updated.
     // for now we will include uuids for both macbooks
+
     this.knownDevices.set('abb335a50ff81ba0ce8ea399421e0482', 1); // a.
     this.knownDevices.set('2b0681ec608da8ae7cda8b8cd42c375d', 2); // a.
+    this.knownDevices.set('7ce331532d7087440b2754705259b0be', 3); // a.
+    this.knownDevices.set('61c25f1db62f8b897c546d7a07a3c38f', 4); // a.
     this.knownDevices.set('cf27adcf076c47d2bcd071f3ef2e93b5', 1); // r.
     this.knownDevices.set('99025e9d50fe47e59a40a6091cc1fbb7', 2); // r.
   }
@@ -71,67 +74,62 @@ export default class BLEService extends EventEmitter {
   }
 
   /**
-   * Stop scanning and disconnect all known devices
+   * Stop scanning and disconnect all connected devices.
    */
   async shutdown() {
     noble.stopScanning();
-    for (const [uuid, peripheral] of this.witmotion) {
+    for (const [deviceUuid, device] of this.witmotion) {
       try {
-        await peripheral.disconnectAsync();
-        console.log(`Disconnected: ${uuid}`);
-      } catch (e) {
-        console.warn(`Error disconnecting ${uuid}:`, e);
+        await device.disconnect();
+      } catch (error) {
+        console.error(`Error disconnecting ${deviceUuid}`, error);
       }
     }
   }
 
 
-  // Connect and read data from the peripheral
+  /**
+   * Connect to the peripheral, read data from it, and enable notifications.
+   *
+   * @param {noble.Peripheral} peripheral - The peripheral to connect to.
+   * @returns {Promise<void>} A promise that resolves when the peripheral is connected and
+   * notifications are enabled for the relevant characteristics.
+   */
   async _connectAndRead(peripheral) {
+    const peripheralUuid = peripheral.uuid;
 
-    const uuid = peripheral.uuid;
+    if (this.witmotion.has(peripheralUuid)) return;
 
-    if (this.witmotion.has(uuid)) return;
-
-    this.witmotion.set(uuid, peripheral);
-    console.log(`${uuid} ${peripheral.advertisement.localName}`);
+    this.witmotion.set(peripheralUuid, peripheral);
 
     try {
       await peripheral.connectAsync();
       console.log(`Connected to device: ${peripheral.advertisement.localName}`);
 
+      // Discover services
       const services = await peripheral.discoverServicesAsync([]);
       for (const service of services) {
         console.log(`Discovered service: ${service.uuid}`);
+        // Discover characteristics
         const characteristics = await service.discoverCharacteristicsAsync([]);
 
         for (const characteristic of characteristics) {
           console.log(`Characteristic UUID: ${characteristic.uuid}`);
 
-          // Enable notifications if characteristic supports it
+          // Enable notifications for characteristics that support it
           if (characteristic.properties.includes("notify")) {
             await characteristic.subscribeAsync();
             console.log(`Subscribed to notifications: ${characteristic.uuid}`);
 
+            // Handle incoming data from the characteristic
             characteristic.on("data", (data, isNotification) => {
               if (!isNotification) return;
 
               this.broadcast(peripheral, data);
-
-              // for testing
-
-              const header = data.readUInt8(0).toString(16);
-              const frameType = data.readUInt8(1).toString(16);
-              // console.log(`\nuuid: ${uuid} header:${header} frameType:${frameType} ${this.witmotion.size}`);
-              
-              if (this.debug) {
-                console.log(`Data from ${characteristic.uuid}:`, dataHex);
-                console.log(`header:${header} frameType:${frameType}`);
-              }
             });
           }
 
-          // Read value directly if supported
+          // Read value directly from characteristics that support it
           if (characteristic.properties.includes("read")) {
             try {
               const data = await characteristic.readAsync();
@@ -146,10 +144,11 @@ export default class BLEService extends EventEmitter {
         }
       }
 
+      // Handle disconnections
       peripheral.on("disconnect", () => {
         console.log(`Device disconnected. ${peripheral.uuid}`);
-        this.discoveredDevices.delete(peripheral.uuid);
-        this.witmotion.delete(peripheral.uuid);
+        this.discoveredDevices.delete(peripheralUuid);
+        this.witmotion.delete(peripheralUuid);
         noble.startScanning([], false);
       });
     } catch (err) {

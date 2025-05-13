@@ -1,7 +1,9 @@
 import { WebSocketServer } from "ws";
+import { EventEmitter } from "events";
 
-export default class WSService {
+export default class WSService extends EventEmitter {
   constructor(port) {
+    super();
     this.port = port;
     this.wss = null;
   }
@@ -14,8 +16,7 @@ export default class WSService {
 
       ws.on("message", (msg) => {
         console.log(`← Received from ${remote}: ${msg}`);
-        // echo back, or handle custom protocol here:
-        // ws.send(JSON.stringify({ success: true, echo: msg }));
+        this.interpret(msg);
       });
 
       ws.on("close", () => {
@@ -34,6 +35,15 @@ export default class WSService {
     this.wss.on("error", (err) => {
       console.error("WebSocket server error:", err);
     });
+  }
+
+  interpret(theMsg) {
+    try {
+      const payload = JSON.parse(theMsg);
+      this.emit("data", payload);
+    } catch (error) {
+      console.error(`Error parsing WebSocket message ${theMsg}:`, error.message);
+    }
   }
 
   broadcast(thePayload) {
