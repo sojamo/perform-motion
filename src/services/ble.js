@@ -10,8 +10,19 @@ export default class BLEService extends EventEmitter {
     this.nameFilter = "WT901BLE67";
     this.imu = new IMUAnalysis();
     this.knownDevices = new Map();
-    this.knownDevices.set('abb335a50ff81ba0ce8ea399421e0482', 1);
-    this.knownDevices.set('2b0681ec608da8ae7cda8b8cd42c375d', 2);
+
+    // NOTE:
+    // the following knownDevices are mac-device-specific
+    // Apple’s CoreBluetooth API simply doesn’t expose the real 
+    // BLE hardware address for privacy reasons. Hence we are using
+    // the uuid generated internally instead.
+    // When using this application on a different macbook, these
+    // uuids will be different and will need to be updated.
+    // for now we will include uuids for both macbooks
+    this.knownDevices.set('abb335a50ff81ba0ce8ea399421e0482', 1); // a.
+    this.knownDevices.set('2b0681ec608da8ae7cda8b8cd42c375d', 2); // a.
+    this.knownDevices.set('cf27adcf076c47d2bcd071f3ef2e93b5', 1); // r.
+    this.knownDevices.set('99025e9d50fe47e59a40a6091cc1fbb7', 2); // r.
   }
 
   // Initialize noble event listeners
@@ -48,7 +59,7 @@ export default class BLEService extends EventEmitter {
 
     // Filter for your specific device
     if (name.includes(this.nameFilter)) {
-      console.log(`\n\tConnecting to ${name} (${uuid})\n`);
+      console.log(`\n\tWe are connecting to sensor ${name} with uuid (${uuid})\n`);
       this._connectAndRead(peripheral);
     }
   }
@@ -77,7 +88,9 @@ export default class BLEService extends EventEmitter {
 
   // Connect and read data from the peripheral
   async _connectAndRead(peripheral) {
+
     const uuid = peripheral.uuid;
+
     if (this.witmotion.has(uuid)) return;
 
     this.witmotion.set(uuid, peripheral);
@@ -103,9 +116,9 @@ export default class BLEService extends EventEmitter {
             characteristic.on("data", (data, isNotification) => {
               if (!isNotification) return;
 
-              const result = this.imu.analyse(uuid, data);
-              const id = this.knownDevices.get(uuid) || 0;
-              this.emit("data", { uuid: id, data: result });
+              this.broadcast(peripheral, data);
+
+              // for testing
 
               const header = data.readUInt8(0).toString(16);
               const frameType = data.readUInt8(1).toString(16);
@@ -142,6 +155,13 @@ export default class BLEService extends EventEmitter {
     } catch (err) {
       console.error("Error during connectAndRead:", err);
     }
+  }
+
+  broadcast(thePeripheral, theData) {
+    const uuid = thePeripheral.uuid;
+    const dataProcessed = this.imu.analyse(uuid, theData);
+    const id = this.knownDevices.get(uuid) || 0;
+    this.emit("data", { uuid: id, data: dataProcessed });
   }
 
 }
