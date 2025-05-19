@@ -4,7 +4,7 @@
   "description": "A project that looks at motion sensors in a collaborative performance setting.",
   "main": "index.js",
   "scripts": {
-    "start": "node ./bin/cli.js",
+    "start": "node ./bin/cli.js --list",
     "dev": "nodemon --exec \"npm run start\"",
     "daemon": "nohup npm run start > logs/out.log 2>&1 & echo $! > bt-ws-osc.pid"
   },
@@ -18,9 +18,12 @@
   "type": "module",
   "dependencies": {
     "@abandonware/noble": "^1.9.2-26",
+    "@serialport/parser-readline": "^13.0.0",
     "commander": "^13.1.0",
     "dotenv": "^16.5.0",
+    "express": "^5.1.0",
     "node-osc": "^9.1.5",
+    "serialport": "^13.0.0",
     "ws": "^8.18.2"
   },
   "devDependencies": {
