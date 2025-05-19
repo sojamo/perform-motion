@@ -29,7 +29,7 @@ export default class BLEService extends EventEmitter {
   }
 
   // Initialize noble event listeners
-  connect() {
+  start() {
     noble.on("stateChange", (state) => this._handleStateChange(state));
     noble.on("discover", (peripheral) => this._handleDiscover(peripheral));
   }

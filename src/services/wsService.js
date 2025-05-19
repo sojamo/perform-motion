@@ -15,7 +15,6 @@ export default class WSService extends EventEmitter {
       console.log(`Client connected: ${remote}`);
 
       ws.on("message", (msg) => {
-        console.log(`← Received from ${remote}: ${msg}`);
         this.interpret(msg);
       });
 
@@ -37,18 +36,44 @@ export default class WSService extends EventEmitter {
     });
   }
 
+  /**
+   * Interpret an incoming WebSocket message.
+   * Parses the JSON message and emits a 'data' event
+   * with the parsed payload.
+   *
+   * The orchestrator is listening for this event.
+   *
+   * @param {string} theMsg - The incoming message as a JSON string.
+   */
   interpret(theMsg) {
     try {
+      // Attempt to parse the incoming message as JSON
       const payload = JSON.parse(theMsg);
+
+      // Emit the parsed payload as a 'data' event
       this.emit("data", payload);
     } catch (error) {
-      console.error(`Error parsing WebSocket message ${theMsg}:`, error.message);
+      // Log an error if parsing fails
+      console.error(
+        `Error parsing WebSocket message ${theMsg}:`,
+        error.message,
+      );
     }
   }
 
+  /**
+   * Broadcast a payload to all connected WebSocket clients,
+   * triggered by the Orchestrator listening for BLEService data events.
+   *
+   * Receivers will most probably be web-based interface such as
+   * dashboards or other frontends and visualizations.
+   *
+   * @param {Object} thePayload - The payload to send.
+   */
   broadcast(thePayload) {
     this.wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
+        // Send the serialized payload to the client.
         client.send(JSON.stringify(thePayload));
       }
     });
