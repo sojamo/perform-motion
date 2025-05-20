@@ -56,6 +56,15 @@ class WitMotion {
     return filtered;
   }
 
+  /**
+   * Adds a new item to the array and removes the oldest 
+   * item if the array exceeds the specified limit.
+   * Adds new items to the end and removes from the beginning
+   * 
+   * @param {Array} n - The array to which the new item is added.
+   * @param {*} newItem - The new item to be added to the array.
+   * @param {number} [limit=100] - The maximum number of items allowed in the array.
+   */
   pushWithLimit(n, newItem, limit = 100) {
     n.push(newItem);
     if (n.length > limit) {
@@ -63,6 +72,12 @@ class WitMotion {
     }
   }
 
+  /**
+   * Set the current data from the sensor and
+   * store the newest acceleration data in the history.
+   * 
+   * @param {Object} theData - The current sensor data.
+   */
   setData(theData) {
     this.data = theData;
     this.pushWithLimit(this.history.raw.ax, this.data.ax);
@@ -70,6 +85,12 @@ class WitMotion {
     this.pushWithLimit(this.history.raw.az, this.data.az);
   }
 
+  /**
+   * Return the current data of the sensor.
+   * Data here is the raw data from the sensor including its history
+   * 
+   * @return {Object} The current sensor data.
+   */
   getData() {
     return this.data;
   }

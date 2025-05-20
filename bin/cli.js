@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
-import { Command } from "commander";
-import config from "../src/config.js";
-import Orchestrator from "../src/orchestrator.js";
-import { SerialPort } from "serialport";
-import SerialService from "../src/services/serialService.js";
+// Import necessary modules
+import { Command } from "commander"; // For parsing CLI arguments
+import config from "../src/config.js"; // Load default config values
+import Orchestrator from "../src/orchestrator.js"; // Main orchestration logic
+import SerialService from "../src/services/serialService.js"; // For listing serial ports
 
-
+// Set up the CLI parser with all available options
 const program = new Command();
 program
-  .description("Bridge BT → WebSocket & OSC streams")
+  .description("Bridge BT → WebSocket & OSC streams") // Describe what the CLI does
   .option("-d, --device <id>", "Bluetooth device ID", config.btDeviceId)
   .option("-w, --ws-port <n>", "WebSocket port", config.wsPort)
   .option("-o, --osc-host <n>", "OSC host", config.oscHost)
@@ -19,86 +19,48 @@ program
   .option("-l, --list", "List all serial ports and exit")
   .parse();
 
+const opts = program.opts(); // Get parsed CLI options as an object
 
-const opts = program.opts();
-console.log(opts);
+// Print the currently active
+// configuration for review
+console.log(`Perform Motion: current configuration\n\n`, opts);
 
-// Function to list serial ports
-async function listSerialPorts() {
-  try {
-    const ports = await SerialPort.list();
-    if (ports.length === 0) {
-      console.log('No serial ports detected.');
-      return;
+// If user wants to list serial ports
+// or serialPort is empty, show serial ports
+if (opts.list || opts.serialPort.length === 0) {
+  // Query all available serial ports
+  const ports = await SerialService.listSerialPorts();
+
+  // Auto-select the first port
+  // containing 'usbmodem' if present
+  ports.forEach((el) => {
+    if (
+      opts.serialPort.length === 0 &&
+      el.path.includes("usbmodem")
+    ) {
+      opts.serialPort = el.path;
     }
-    console.log('Detected serial ports:');
-    ports.forEach(port => {
-      console.log(`• ${port.path}` +
-        (port.manufacturer ? ` — ${port.manufacturer}` : '') +
-        (port.serialNumber ? ` (S/N: ${port.serialNumber})` : '')
-      );
-    });
-  } catch (err) {
-    console.error('Error listing serial ports:', err);
-  }
+  });
+
+  // Print which serial port will be used
+  console.log(
+    `Using Serial Port:`,
+    opts.serialPort.length > 0 ? opts.serialPort : "non-detected.",
+  );
+
+  // If only listing was requested, exit
+  if (opts.list) process.exit(0);
 }
 
-if (opts.list) {
-  await SerialService.listSerialPorts();
-  const orchestrator = new Orchestrator(opts);
-  orchestrator.start();
-}
+// Instantiate the orchestrator with
+// CLI options and start the bridge
+const orchestrator = new Orchestrator(opts);
+orchestrator.start();
 
+// Handle Ctrl-C (SIGINT): gracefully
+// stop all services before exiting
 process.on("SIGINT", async () => {
   console.log("Shutting down…");
   await orchestrator.stop();
   process.exit(0);
 });
-
-
-// (async () => {
-//   if (opts.list) {
-//     await listSerialPorts();
-//     process.exit(0);
-//   }
-
-//   if (!opts.serialPort) {
-//     console.error('Error: --port <path> is required unless --list is used.');
-//     process.exit(1);
-//   }
-
-//   // Instantiate and use SerialService
-//   const port = opts.serialPort;
-//   const baud = parseInt(opts.serialBaudrate, 10);
-//   const device = new SerialPort({
-//             path: port,
-//             baudRate: baud,
-//             autoOpen: false,
-//           });
-//   const serialService = new SerialService(port, baud);
-//   // try {
-//   //   await serialService.open();
-//   //   console.log(`Opened serial port ${opts.port} at ${opts.baud} baud.`);
-
-//   //   // Register data handler
-//   //   serialService.onData(line => {
-//   //     console.log('←', line);
-//   //   });
-
-//   //   // Read from stdin to send data
-//   //   process.stdin.setEncoding('utf8');
-//   //   console.log('Type to send over serial. Ctrl+C to exit.');
-//   //   process.stdin.on('data', input => {
-//   //     const msg = input.trim();
-//   //     if (msg) {
-//   //       serialService.send(msg);
-//   //       console.log('→', msg);
-//   //     }
-//   //   });
-
-//   // } catch (err) {
-//   //   console.error('Serial error:', err);
-//   //   process.exit(1);
-//   // }
-// })();
-

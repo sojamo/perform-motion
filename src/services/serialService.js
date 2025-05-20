@@ -9,10 +9,14 @@ import EventEmitter from "events";
  * and sending messages to the device.
  */
 export default class SerialService extends EventEmitter {
-  constructor(theSerialPort, theBaudRate = 57600) {
+  constructor(theSerialPortPath, theBaudRate = 57600) {
     super();
+
+    this.path = theSerialPortPath;
+    if(!this.path) return;
+    
     this.port = new SerialPort({
-      path: theSerialPort,
+      path: theSerialPortPath,
       baudRate: theBaudRate,
       autoOpen: false,
     });
@@ -44,6 +48,7 @@ export default class SerialService extends EventEmitter {
    * @returns 
    */
   async start() {
+    if(!this.path) return;
     return new Promise((resolve, reject) => {
       this.port.open((err) => err ? reject(err) : resolve());
     });
@@ -57,6 +62,8 @@ export default class SerialService extends EventEmitter {
    * @param {*} message 
    */
   send(message) {
+    if(!this.path) return;
+
     if (this.port.isOpen) {
       this.port.write(`${message}\n`);
     }
@@ -68,6 +75,8 @@ export default class SerialService extends EventEmitter {
    * @param {*} thePacket
    */
   write(thePacket) {
+    if(!this.path) return;
+    
     if (this.port.isOpen) {
       this.port.write(thePacket, (err) => {
         if (err) {
@@ -118,7 +127,7 @@ export default class SerialService extends EventEmitter {
       const ports = await SerialPort.list();
       if (ports.length === 0) {
         console.log("No serial ports detected.");
-        return;
+        return [];
       }
       console.log("Detected serial ports:");
       ports.forEach((port) => {
@@ -128,8 +137,10 @@ export default class SerialService extends EventEmitter {
             (port.serialNumber ? ` (S/N: ${port.serialNumber})` : ""),
         );
       });
+      return ports;
     } catch (err) {
       console.error("Error listing serial ports:", err);
     }
+    return [];
   }
 }

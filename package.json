@@ -4,7 +4,8 @@
   "description": "A project that looks at motion sensors in a collaborative performance setting.",
   "main": "index.js",
   "scripts": {
-    "start": "node ./bin/cli.js --list",
+    "app": "node ./bin/cli.js",
+    "list": "node ./bin/cli.js --list",
     "dev": "nodemon --exec \"npm run start\"",
     "daemon": "nohup npm run start > logs/out.log 2>&1 & echo $! > bt-ws-osc.pid"
   },
