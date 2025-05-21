@@ -31,7 +31,7 @@ export default class OSCRoute {
       }
 
       // Send raw data via OSC.
-      this.osc.send(`/pm/raw/${uuid}`, values);
+      this.osc.send(`/pm/raw/${data.uuid}`, values);
     } else if (thePayload.source === "serial") {
       this.osc.send("/pm/serial", thePayload.data);
     } else {
