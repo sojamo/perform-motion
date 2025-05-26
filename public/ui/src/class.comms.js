@@ -95,6 +95,8 @@ class SocketCommunication {
 
   // Send a JSON payload over the WebSocket
   send(thePayload) {
+    if (this.readyState() !== WebSocket.OPEN) return;
+    // console.log(`send: ${JSON.stringify(thePayload)}`);
     this.socket.send(JSON.stringify(thePayload));
   }
 }

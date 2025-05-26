@@ -2,107 +2,120 @@ class Render {
   constructor(theApp) {
   }
 
-  draw(theApp, theWitmotions) {
-    theApp.background(0);
-    theApp.lights();
-    theApp.noStroke();
-    theApp.push();
-    theApp.ortho();
-    theApp.translate(300, -theApp.height / 2 + 100);
+  draw(theCxt, theWitmotions) {
+    theCxt.background(0);
+    theCxt.lights();
+    theCxt.noStroke();
+    theCxt.push();
+    theCxt.ortho();
+    theCxt.translate(300, -theCxt.height / 2 + 100);
     theWitmotions.forEach((v, k) => {
       const data = v.getData();
       const v0 = v.interact(
-        theApp.radians(data.roll),
-        theApp.radians(data.pitch),
-        theApp.radians(data.yaw),
+        theCxt.radians(data.roll),
+        theCxt.radians(data.pitch),
+        theCxt.radians(data.yaw),
       );
 
-      theApp.push();
-      theApp.rotateX(v0.roll);
-      theApp.rotateZ(v0.pitch);
-      theApp.rotateY(v0.yaw);
+      theCxt.push();
+      theCxt.rotateX(v0.roll);
+      theCxt.rotateZ(v0.pitch);
+      theCxt.rotateY(v0.yaw);
 
-      theApp.box(100, 20, 100);
-      theApp.pop();
-      theApp.translate(0, 300);
+      theCxt.box(100, 20, 100);
+      theCxt.pop();
+      theCxt.translate(0, 300);
     });
-    theApp.pop();
-    theApp.push();
-    theApp.translate(-theApp.width / 2, -theApp.height / 2);
-    theApp.translate(width / 2, 100);
+    theCxt.pop();
+    theCxt.push();
+    theCxt.translate(-theCxt.width / 2, -theCxt.height / 2);
+    theCxt.translate(width / 2, 100);
 
-    this._drawGraphFor(theApp, theWitmotions, "raw", "ax", color(255, 0, 0));
-    this._drawGraphFor(theApp, theWitmotions, "raw", "ay", color(0, 255, 0));
-    this._drawGraphFor(theApp, theWitmotions, "raw", "az", color(0, 0, 255));
+    this._drawGraphFor(theCxt, theWitmotions, "raw", "ax", color(255, 0, 0));
+    this._drawGraphFor(theCxt, theWitmotions, "raw", "ay", color(0, 255, 0));
+    this._drawGraphFor(theCxt, theWitmotions, "raw", "az", color(0, 0, 255));
 
-    theApp.translate(30, 100);
+    theCxt.translate(30, 100);
 
     this._drawRadialGraphFor(
-      theApp,
+      theCxt,
       theWitmotions,
       "filtered",
       "roll",
       color(255, 0, 0),
     );
-    theApp.translate(70, 0);
+    theCxt.translate(70, 0);
     this._drawRadialGraphFor(
-      theApp,
+      theCxt,
       theWitmotions,
       "filtered",
       "pitch",
       color(0, 255, 0),
     );
-    theApp.translate(70, 0);
+    theCxt.translate(70, 0);
     this._drawRadialGraphFor(
-      theApp,
+      theCxt,
       theWitmotions,
       "filtered",
       "yaw",
       color(0, 0, 255),
     );
 
-    theApp.pop();
+    theCxt.pop();
   }
 
-  _drawGraphFor(theApp, theWitmotions, theSource, theType, theColor) {
-    theApp.push();
-    theApp.noFill();
-    theApp.stroke(theColor);
-    theApp.strokeWeight(1.5);
+  lights(theCxt, theOutput) {
+    const out = theOutput.slice(0, -1);
+    push();
+    translate(-width/2, -height/2);
+    translate(20,100);
+    out.forEach((light,idx) => {
+      stroke(100);
+      fill(int(light));
+      rect(idx * 30, 0, 15, 200);
+    });
+    pop();
+  }
+
+  _drawGraphFor(theCxt, theWitmotions, theSource, theType, theColor) {
+    theCxt.push();
+    theCxt.noFill();
+    theCxt.stroke(theColor);
+    theCxt.strokeWeight(1.5);
     let n = 0;
     theWitmotions.forEach((v, k) => {
       const label = v.history[theSource][theType].slice(-1);
-      theApp.beginShape();
+      theCxt.beginShape();
       v.history[theSource][theType].forEach((el, i) => {
-        theApp.vertex(i * 2, el * 20);
+        theCxt.vertex(i * 2, el * 20);
       });
-      theApp.endShape();
-      theApp.translate(0, 300);
+      theCxt.endShape();
+      theCxt.translate(0, 300);
     });
     pop();
   }
-  _drawRadialGraphFor(theApp, theWitmotions, theSource, theType, theColor) {
+  _drawRadialGraphFor(theCxt, theWitmotions, theSource, theType, theColor) {
     const diameter = 50;
-    theApp.push();
-    theApp.noFill();
-    theApp.stroke(theColor);
-    theApp.strokeWeight(1.5);
+    theCxt.push();
+    theCxt.noFill();
+    theCxt.stroke(theColor);
+    theCxt.strokeWeight(1.5);
     theWitmotions.forEach((v, k) => {
       let v0 = v.history[theSource][theType].slice(-1);
-      theApp.ellipse(0, 0, diameter);
-      theApp.push();
-      theApp.rotate(v0);
-      theApp.rect(0, 0, diameter / 2, 4);
-      theApp.pop();
-      theApp.fill(255);
-      theApp.text(theApp.nf(v0 % theApp.TWO_PI, 1, 2), 0, diameter);
-      theApp.noFill();
-      theApp.translate(0, 300);
+      theCxt.ellipse(0, 0, diameter);
+      theCxt.push();
+      theCxt.rotate(v0);
+      theCxt.rect(0, 0, diameter / 2, 4);
+      theCxt.pop();
+      theCxt.fill(255);
+      theCxt.text(theCxt.nf(v0 % theCxt.TWO_PI, 1, 2), 0, diameter);
+      theCxt.noFill();
+      theCxt.translate(0, 300);
     });
     pop();
   }
 
-  drawReport(theApp, theReport) {
+  drawReport(theCxt, theReport) {
     const txt = theReport.map((v, k) => {
       const desc = v.desc;
       let val = "";
@@ -123,12 +136,12 @@ class Render {
       }
       return `${desc}: ${val}`;
     }).join("\n");
-    theApp.push();
-    theApp.textSize(20);
-    theApp.translate(-width / 2, -height / 2);
-    theApp.translate(100, 100);
-    theApp.fill(255);
-    theApp.text(txt, 0, 0, width / 2 - 200, height - 200);
-    theApp.pop();
+    theCxt.push();
+    theCxt.textSize(20);
+    theCxt.translate(-width / 2, -height / 2);
+    theCxt.translate(100, 100);
+    theCxt.fill(255);
+    theCxt.text(txt, 0, 0, width / 2 - 200, height - 200);
+    theCxt.pop();
   }
 }

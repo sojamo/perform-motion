@@ -3,6 +3,7 @@ const witmotions = new Map();
 let analyse;
 let render;
 let comms;
+let ui;
 
 const output = {
   size: 7,
@@ -20,26 +21,30 @@ const params = {
 };
 
 const control = {
-  mode: 0, // 0 = keyboard-control, 1 = sensor-controlled
-  output: {
-    current: [0, 0, 0, 0, 0, 0, 0, 255],
-    off: [0, 0, 0, 0, 0, 0, 0, 255],
-    on: [254, 254, 254, 254, 254, 254, 254, 255],
+  mode: 0, // 0 = keyboard-control, 1 = sensor-controlled, 2 = automatic
+  preset: {
+    current: [0, 0, 0, 0, 0, 0, 0],
+    off: [0, 0, 0, 0, 0, 0, 0],
+    on: [254, 254, 254, 254, 254, 254, 254],
   },
 };
 
 function preload() {
   font = loadFont("./src/assets/MonaspaceNeonFrozen-Medium.ttf");
+  automatedScore = loadImage("./src/assets/images/automated-0.jpg"); 
 }
 
 function setup() {
-  createCanvas(windowWidth, windowHeight, WEBGL);
+  const canvas = createCanvas(windowWidth, windowHeight, WEBGL);
+  canvas.parent("p5-container");
   background(0);
   textFont(font);
 
   comms = new SocketCommunication(this);
   analyse = new AnalyseData();
   render = new Render();
+  ui = new UIbridge();
+  auto = new Automated(automatedScore);
 }
 
 /**
@@ -64,59 +69,89 @@ function on(event, data) {
 }
 
 function draw() {
-  const report = analyse.process(witmotions, params);
-  render.draw(this, witmotions);
-  render.drawReport(this, report);
+  // Note: the following is absolutely messy
+  // and needs to be refactored and cleaned up
+  // for better readability and maintainability!
 
   update();
 
-  let output = control.output.off;
-  let packet = { source: "ui", data: output };
-  if (control.mode == 1) {
-    output = computeLights();
-  } else if (control.mode == 0) {
-    output = control.output.current;
+  let currentOutput = control.preset.off;
+  let packet = { source: "ui", data: currentOutput };
+  if (control.mode == 0) {
+    // assign current preset when we are
+    // in User Interface mode to control
+    // the state of lights manually
+    currentOutput = control.preset.current;
+  } else if (control.mode == 1) {
+    // compute the current light output
+    // based on sensor data
+    currentOutput = computeLightsFrom(output);
+  } else if (control.mode == 2) {
+    // compute the current light output
+    // based on automated playback
+    currentOutput = auto.compute(output);
   }
-  packet.data = output;
-  console.log(packet);
+
+  // add delimiter to end of packet
+  currentOutput[output.size] = output.delimiter;
+  // assign packet data
+  packet.data = currentOutput;
+  // send packet
   comms.send(packet);
+
+  const report = analyse.process(witmotions, params);
+  ui.send("data-report", report);
+
+  if (ui.actionTriggered === true) {
+    background(40);
+  } else {
+    render.draw(this, witmotions);
+    if(control.mode === 2) {
+      auto.draw(this);
+    }
+  }
+
+  render.lights(this, currentOutput);
+
+  push();
+  translate(-width / 2, -height / 2);
+  fill(255);
+  const txt = `mode : ${
+    ["keyboard-control", "sensor-controlled", "automatic"][control.mode]
+  }`;
+  text(txt, 20, 20);
+  pop();
 }
 
-function computeLights() {
-  if (comms.readyState() !== WebSocket.OPEN) return;
-
+/**
+ * Compute the current light values based on
+ * the current mode and intensity.
+ *
+ * This function will not send any data if
+ * the WebSocket connection is not open.
+ *
+ * @returns {array} The computed light data
+ */
+function computeLightsFrom(theOutput) {
   if (params.mode === 0) {
-    for (let i = 0; i < output.size; i++) {
-      output.data[i] = int(random(0, 1) > 0.8 ? 254 : 0);
+    for (let i = 0; i < theOutput.size; i++) {
+      theOutput.data[i] = int(random(0, 1) > 0.8 ? 254 : 0);
     }
   } else if (params.mode === 1) {
-    for (let i = 0; i < output.size; i++) {
-      const v0 = ((params.update * 4) + i * 5) % (output.delimiter - 1);
+    for (let i = 0; i < theOutput.size; i++) {
+      const v0 = ((params.update * 4) + i * 5) % (theOutput.delimiter - 1);
       const v1 = v0 * params.intensity;
-      output.data[i] = int(v1);
+      theOutput.data[i] = int(v1);
     }
   }
 
-  output.data[output.size] = output.delimiter;
-  return output.data;
+  return theOutput.data;
 }
 
 function update() {
+  // Note: the following is a bit hacky and cryptic,
+  // needs to be cleaned up and needs coments
   const delta = params.updateRate.next - params.updateRate.current;
   params.updateRate.current += delta * 0.1;
   params.update += params.updateRate.current;
-}
-
-function keyPressed() {
-  switch (key) {
-    case (" "):
-      control.mode = control.mode == 0 ? 1 : 0;
-      break;
-    case ("0"):
-      control.output.current = control.output.off;
-      break;
-    case ("1"):
-      control.output.current = control.output.on;
-      break;
-  }
 }

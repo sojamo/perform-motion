@@ -1,19 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>Perform Motion</title>
-    <script src="./lib/p5.min_1.11.1.js"></script>
-    <link rel="stylesheet" type="text/css" href="./style.css">
-    <meta charset="utf-8" />
-  </head>
-  <body>
-    <main>
-    </main>
-    <script src="./src/class.analyse.js"></script>
-    <script src="./src/class.render.js"></script>
-    <script src="./src/class.comms.js"></script>
-    <script src="./src/class.witmotion.js"></script>
-    <script src="./src/class.kalman.js"></script>
-    <script src="./src/sketch.js"></script>
-  </body>
+
+<head>
+  <title>Perform Motion</title>
+  <script src="./lib/p5.min_1.11.1.js"></script>
+  <link rel="stylesheet" type="text/css" href="./style.css">
+  <meta charset="utf-8" />
+</head>
+
+<body>
+  <div class="row" style="height:40vh;">
+    <div class="col">
+      <button id="myButton" class="btn">OK</button>
+      <br>
+      <div class="toggle-group" id="group-a">
+        <button class="toggle-btn active">User Interface</button>
+        <button class="toggle-btn">Sensors</button>
+        <button class="toggle-btn">Automated</button>
+      </div>
+      <br>
+      <div class="toggle-group" id="group-b">
+        <button class="toggle-btn active">All Lights off</button>
+        <button class="toggle-btn">All Lights on</button>
+        <!-- <button class="toggle-btn">Responsive</button> -->
+      </div>
+    </div>
+    <div class="col data-report" id="data-report"></div>
+  </div>
+
+  <div class="row">
+    <div class="col" id="p5-container">
+    </div>
+  </div>
+
+  <script src="./src/class.analyse.js"></script>
+  <script src="./src/class.render.js"></script>
+  <script src="./src/class.comms.js"></script>
+  <script src="./src/class.witmotion.js"></script>
+  <script src="./src/class.kalman.js"></script>
+  <script src="./src/class.uibridge.js"></script>
+  <script src="./src/class.automated.js"></script>
+  <script src="./src/sketch.js"></script>
+
+  <script>
+    document.getElementById('myButton').addEventListener('click', function () {
+      window.triggerP5Action({ ref: "pause", value: 1 });
+    });
+  </script>
+
+  <script>
+
+    class ToggleGroup {
+      constructor(containerId, onChange) {
+        this.container = document.getElementById(containerId);
+        this.buttons = Array.from(this.container.querySelectorAll('.toggle-btn'));
+        this.onChange = onChange || function () { };
+
+        this.buttons.forEach((btn, idx) => {
+          btn.addEventListener('click', () => this.select(idx));
+        });
+      }
+
+      select(index) {
+        this.buttons.forEach(b => b.classList.remove('active'));
+        this.buttons[index].classList.add('active');
+        this.onChange(index, this.buttons[index]);
+      }
+
+      // Optionally, get currently selected index
+      getSelectedIndex() {
+        return this.buttons.findIndex(btn => btn.classList.contains('active'));
+      }
+    }
+
+    const groupA = new ToggleGroup('group-a', (index, btn) => {
+      window.triggerP5Action({ ref: "mode", value: index });
+    });
+
+    const groupB = new ToggleGroup('group-b', (index, btn) => {
+      window.triggerP5Action({ ref: "lights", value: index });
+    });
+
+  </script>
+</body>
+
 </html>

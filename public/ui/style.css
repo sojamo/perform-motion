@@ -1,7 +1,158 @@
+:root {
+  --layout-gap-default: 1rem;
+} 
+
 html, body {
+  margin: 0;
+  padding: 0;
+  background: #111827;
+  color: #f3f4f6; 
+  font-family: system-ui, sans-serif;
   margin: 0;
   padding: 0;
 }
 canvas {
   display: block;
+}
+
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+  padding-block: calc(var(--layout-gap-default) * 1);
+  margin-bottom: calc(var(--layout-gap-default) * 4);
+}
+
+.row>.col {
+  flex: 1;
+}
+
+/*
+ * Buttons
+ */
+
+.btn {
+  background: #374151;
+  color: #f3f4f6;
+  padding: 0.5rem 1.25rem;
+  margin:0.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  font-family: system-ui, sans-serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn:hover {
+  background: #4b5563;
+}
+.btn:focus {
+  outline:none;
+}
+.btn.light {
+  background: #9ca3af; 
+  color: #111827;
+}
+.btn.light:hover {
+  background: #d1d5db;
+}
+.btn.dark {
+  background: #1f2937;
+  color: #f3f4f6;
+}
+.btn.dark:hover {
+  background: #374151;
+}
+
+
+
+/*
+ * Toggle Group 
+ */
+ 
+.toggle-group {
+  display: inline-flex;
+  border-radius: 0.5rem;
+  background: #1f2937;   /* gray-800 */
+  padding: 4px;
+  margin:0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.toggle-btn {
+  background: #1f2937;   /* gray-800 */
+  color: #9ca3af;        /* gray-400 */
+  border: none;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  font-family: system-ui, sans-serif;
+  font-size: 1rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+.toggle-btn.active, .toggle-btn:active {
+  background: #374151;   /* gray-700 */
+  color: #f3f4f6;        /* gray-100 */
+}
+
+.toggle-btn:first-child {
+  border-radius: 0.5rem 0 0 0.5rem;
+}
+.toggle-btn:last-child {
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+.toggle-btn:focus {
+  outline:none;
+}
+
+
+
+
+
+
+.data-report {
+  background: #1f2937;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  margin: auto;
+  padding: 2rem 2.5rem;
+  margin:1rem;
+  max-width: 700px;
+}
+
+.data-report table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+.data-report th, #report td {
+  border: 1px solid #374151;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.data-report th {
+  background: #111827;
+  color: #f3f4f6;
+  font-weight: 600;
+}
+
+.data-report td {
+  background: #1f2937;
+  color: 	#9ca3af;
+}
+
+.data-report th:nth-child(1),
+.data-report td:nth-child(1) {
+  width: 160px;
+}
+.data-report th:nth-child(2),
+.data-report td:nth-child(2) {
+  width: 320px;
+  word-break: break-word;
 }
