@@ -11,19 +11,46 @@
 <body>
   <div class="row" style="height:40vh;">
     <div class="col">
-      <button id="myButton" class="btn">OK</button>
-      <br>
-      <div class="toggle-group" id="group-a">
-        <button class="toggle-btn active">User Interface</button>
+      <div class="toggle-group" id="group-mode">
+        <button class="toggle-btn active">Testing</button>
         <button class="toggle-btn">Sensors</button>
-        <button class="toggle-btn">Automated</button>
+        <button class="toggle-btn" id="mode-automated">Automated</button>
       </div>
-      <br>
-      <div class="toggle-group" id="group-b">
-        <button class="toggle-btn active">All Lights off</button>
-        <button class="toggle-btn">All Lights on</button>
-        <!-- <button class="toggle-btn">Responsive</button> -->
+
+      <div class="region" id="testing-lights">
+        <h2 class="subtitle">Testing Lights</h2>
+        <div class="toggle-group" id="group-test">
+          <button class="toggle-btn active">All Lights off</button>
+          <button class="toggle-btn">All Lights on</button>
+        </div>
+        <div class="toggle-group" id="group-test-individual">
+          <button class="toggle-btn active">0</button>
+          <button class="toggle-btn">1</button>
+          <button class="toggle-btn">2</button>
+          <button class="toggle-btn">3</button>
+          <button class="toggle-btn">4</button>
+          <button class="toggle-btn">5</button>
+          <button class="toggle-btn">6</button>
+          <button class="toggle-btn">7</button>
+        </div>
       </div>
+
+
+      <div class="region" id="automated-controls">
+        <h2 class="subtitle">Automated Controls</h2>
+        <div class="toggle-group" id="group-automated-controls">
+          <button class="toggle-btn">Play</button>
+          <button class="toggle-btn">Pause</button>
+        </div>
+        <button class="btn" id="rewind">Rewind</button>
+      </div>
+      <div class="region" id="automated-speed">
+        <h2 class="subtitle">Speed Control</h2>
+        <button class="btn" id="slower">slower</button>
+        <button class="btn" id="faster">faster</button>
+        <button class="btn" id="normal">normal</button>
+      </div>
+
     </div>
     <div class="col data-report" id="data-report"></div>
   </div>
@@ -41,12 +68,6 @@
   <script src="./src/class.uibridge.js"></script>
   <script src="./src/class.automated.js"></script>
   <script src="./src/sketch.js"></script>
-
-  <script>
-    document.getElementById('myButton').addEventListener('click', function () {
-      window.triggerP5Action({ ref: "pause", value: 1 });
-    });
-  </script>
 
   <script>
 
@@ -73,13 +94,57 @@
       }
     }
 
-    const groupA = new ToggleGroup('group-a', (index, btn) => {
+    function setActiveToggle(groupId, btnIndex) {
+      const group = document.getElementById(groupId);
+      if (!group) return;
+      const buttons = group.querySelectorAll('.toggle-btn');
+      buttons.forEach((btn, i) => {
+        btn.classList.toggle('active', i === btnIndex);
+      });
+    }
+
+    function deactivateAllToggles(groupId) {
+      const group = document.getElementById(groupId);
+      if (!group) return;
+      group.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+    }
+
+    function buttonClickFor(btnId, onChange) {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        window.triggerP5Action(onChange);
+      });
+    }
+
+    new ToggleGroup('group-mode', (index, btn) => {
       window.triggerP5Action({ ref: "mode", value: index });
     });
 
-    const groupB = new ToggleGroup('group-b', (index, btn) => {
+    new ToggleGroup('group-test', (index, btn) => {
+      deactivateAllToggles("group-test-individual");
+      setActiveToggle("group-mode", 0);
+      window.triggerP5Action({ ref: "mode", value: 0 });
       window.triggerP5Action({ ref: "lights", value: index });
     });
+
+    new ToggleGroup('group-test-individual', (index, btn) => {
+      setActiveToggle("group-mode", 0);
+      window.triggerP5Action({ ref: "mode", value: 0 });
+      window.triggerP5Action({ ref: "individual-light", value: index });
+    });
+
+    new ToggleGroup('group-automated-controls', (index, btn) => {
+      setActiveToggle("group-mode", 2);
+      window.triggerP5Action({ ref: "mode", value: 2 });
+      window.triggerP5Action({ ref: "automated-controls", value: index });
+    });
+
+    buttonClickFor("rewind", { ref: "automated-controls", value: 2 });
+    buttonClickFor("slower", { ref: "automated-speed", value: 0 });
+    buttonClickFor("normal", { ref: "automated-speed", value: 1 });
+    buttonClickFor("faster", { ref: "automated-speed", value: 2 });
+    
 
   </script>
 </body>

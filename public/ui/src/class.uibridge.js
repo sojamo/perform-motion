@@ -3,16 +3,18 @@ class UIbridge {
     this.actionTriggered = false;
     this.status = {};
     window.triggerP5Action = this.receive.bind(this);
+    this.showDataTable = false;
   }
 
   receive(theArgs) {
     const { ref, value } = theArgs;
+
     if (ref === "pause") {
       this.actionTriggered = !this.actionTriggered;
     } else if (ref === "mode") {
       control.mode = value; // 0 = UI, 1 = Sensor, 2 = Auto
-      if(control.mode === 2) { 
-        auto.start();
+      if (control.mode === 2) {
+        auto.play();
       }
     } else if (ref === "lights") {
       switch (value) {
@@ -23,6 +25,18 @@ class UIbridge {
           control.preset.current = control.preset.on;
           break;
       }
+    } else if (ref === "individual-light") {
+      control.preset.current = control.preset.current.map((el, i) => {
+        return (i + 1) === value ? 254 : 0;
+      });
+    } else if (ref === "automated-controls") {
+      if (value === 0) auto.play();
+      else if (value === 1) auto.pause();
+      else if (value === 2) auto.rewind();
+    } else if (ref === "automated-speed") {
+      if (value === 0) auto.setSpeed("slower", 0.25);
+      else if (value === 1) auto.setSpeed("normal");
+      else if (value === 2) auto.setSpeed("faster", 0.5);
     }
   }
 
@@ -56,6 +70,8 @@ class UIbridge {
   }
 
   _createTableFromData(data, divId = "report-table") {
+    if(this.showDataTable === false) return;
+    
     const table = document.createElement("table");
     table.border = 1;
 

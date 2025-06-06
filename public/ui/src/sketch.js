@@ -117,7 +117,7 @@ function draw() {
   translate(-width / 2, -height / 2);
   fill(255);
   const txt = `mode : ${
-    ["keyboard-control", "sensor-controlled", "automatic"][control.mode]
+    ["test-control", "sensor-controlled", "automatic"][control.mode]
   }`;
   text(txt, 20, 20);
   pop();
@@ -154,4 +154,12 @@ function update() {
   const delta = params.updateRate.next - params.updateRate.current;
   params.updateRate.current += delta * 0.1;
   params.update += params.updateRate.current;
+}
+
+function mousePressed() {
+  auto.mousePressed();
+}
+
+function mouseDragged() {
+  auto.mouseDragged();
 }

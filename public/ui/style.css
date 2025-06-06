@@ -37,7 +37,7 @@ canvas {
   background: #374151;
   color: #f3f4f6;
   padding: 0.5rem 1.25rem;
-  margin:0.5rem;
+  margin-top:0.5rem;
   border: none;
   border-radius: 0.5rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
@@ -78,7 +78,7 @@ canvas {
   border-radius: 0.5rem;
   background: #1f2937;   /* gray-800 */
   padding: 4px;
-  margin:0.5rem;
+  margin-top:0.5rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
 
@@ -155,4 +155,16 @@ canvas {
 .data-report td:nth-child(2) {
   width: 320px;
   word-break: break-word;
+}
+
+
+
+.subtitle {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.region {
+  margin:1rem;
+  margin-top:2rem;
 }
