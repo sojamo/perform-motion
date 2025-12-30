@@ -13,7 +13,7 @@ export default class OSCRoute {
       // 3-5 Append gyroscope data
       // 6-8 Append orientation data
       const values = [
-        data.data.ax, 
+        data.data.ax,
         data.data.ay,
         data.data.az,
         data.data.gx,
@@ -30,8 +30,12 @@ export default class OSCRoute {
         return;
       }
 
+      // Convert all values to floats to ensure consistent type
+      // Use explicit type objects to force float encoding in OSC
+      const floatValues = values.map((val) => ({ type: "float", value: val }));
+
       // Send raw data via OSC.
-      this.osc.send(`/pm/raw/${data.uuid}`, values);
+      this.osc.send(`/pm/raw/${data.uuid}`, floatValues);
     } else if (thePayload.source === "serial") {
       this.osc.send("/pm/serial", thePayload.data);
     } else {

@@ -57,10 +57,10 @@ class WitMotion {
   }
 
   /**
-   * Adds a new item to the array and removes the oldest 
+   * Adds a new item to the array and removes the oldest
    * item if the array exceeds the specified limit.
    * Adds new items to the end and removes from the beginning
-   * 
+   *
    * @param {Array} n - The array to which the new item is added.
    * @param {*} newItem - The new item to be added to the array.
    * @param {number} [limit=100] - The maximum number of items allowed in the array.
@@ -75,7 +75,7 @@ class WitMotion {
   /**
    * Set the current data from the sensor and
    * store the newest acceleration data in the history.
-   * 
+   *
    * @param {Object} theData - The current sensor data.
    */
   setData(theData) {
@@ -88,7 +88,7 @@ class WitMotion {
   /**
    * Return the current data of the sensor.
    * Data here is the raw data from the sensor including its history
-   * 
+   *
    * @return {Object} The current sensor data.
    */
   getData() {

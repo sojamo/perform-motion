@@ -5,39 +5,23 @@ import WebService from "./services/webService.js";
 import SerialService from "./services/serialService.js";
 import OSCRoute from "./routes/oscRoute.js";
 import SerialRoute from "./routes/serialRoute.js";
-import LightTestSerialComm from "./actions/light/lightTestSerialComm.js";
-import LightFromWeb from "./actions/light/lightFromWeb.js";
 
 export default class Orchestrator {
-  constructor({
-    wsPort,
-    oscHost,
-    oscPort,
-    serialPort,
-    serialBaudrate,
-  }) {
+  constructor({ wsPort, oscHost, oscPort, knownDevices }) {
     console.log(`
-      Orchestrator init with 
-      wsPort: ${wsPort}, 
-      oscHost: ${oscHost}, 
-      oscPort: ${oscPort}, 
-      serialPort: ${serialPort}, 
-      serialBaudrate: ${serialBaudrate}
+      Orchestrator init with
+      wsPort: ${wsPort},
+      oscHost: ${oscHost},
+      oscPort: ${oscPort}
       `);
-    
-    this.bt = new BLEService();
-    
+
+    this.bt = new BLEService(knownDevices);
+
     this.osc = new OSCService(oscHost, oscPort);
     this.oscRoute = new OSCRoute(this.osc);
 
-    this.serial = new SerialService(serialPort, serialBaudrate);
-    this.serialRoute = new SerialRoute(this.serial);
-    
     this.ws = new WSService(wsPort);
     this.web = new WebService(3000, "./public");
-
-    this.lights = new LightFromWeb(this.serial, this.ws);
-    
   }
 
   /**
@@ -45,7 +29,6 @@ export default class Orchestrator {
    * WebSocket and Bluetooth services.
    */
   start() {
-
     // Listen for data events from the
     // WebSocket service.
     this.ws.on("data", (thePayload) => {
@@ -61,27 +44,13 @@ export default class Orchestrator {
       this.oscRoute.broadcast({ source: "bt", data: thePayload });
     });
 
-    // Listen for data events from
-    // the Serial service.
-    this.serial.on("data", (thePayload) => {
-      this.oscRoute.broadcast({ source: "serial", data: thePayload });
-      this.ws.broadcast({ source: "serial", data: thePayload });
-      // this.oscRoute.broadcast({ source: "serial", data: thePayload });
-    });
-
     // Start the WebSocket server.
     this.ws.start();
 
     // Connect to Bluetooth devices.
     this.bt.start();
 
-    // Open serial connection.
-    this.serial.start();
-
-    
     this.web.start();
-
-    this.lights.init();
   }
 
   async stop() {

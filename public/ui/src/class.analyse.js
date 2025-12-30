@@ -14,7 +14,7 @@ class AnalyseData {
     const wit = theWitmotions.get(witId);
     if (wit === undefined) return;
 
-    theReport.push({ "desc": "witId", "value": int(witId) });
+    theReport.push({ desc: "witId", value: int(witId) });
 
     const azHistory = wit.history.raw.az;
     const newAz = azHistory[azHistory.length - 1];
@@ -22,9 +22,9 @@ class AnalyseData {
     if (azHistory.length > this.analysisWindow) {
       const delta = Math.abs(newAz - azHistory[azHistory.length - 2]);
       if (delta > 2) {
-        theReport.push({ "desc": "spike-Z", "value": delta });
+        theReport.push({ desc: "spike-Z", value: delta });
       } else {
-        theReport.push({ "desc": "spike-Z", "value": 0 });
+        theReport.push({ desc: "spike-Z", value: 0 });
       }
 
       // 1. get Sign changes to detect oscillations
@@ -64,10 +64,10 @@ class AnalyseData {
       ? amplitudes.reduce((a, b) => a + b, 0) / amplitudes.length
       : 0;
 
-    theReport.push({ "desc": "oscillation-freq", "value": frequency });
-    theReport.push({ "desc": "oscillation-amp", "value": avgAmplitude });
-    theReport.push({ "desc": "oscillation-peaks", "value": peaks });
-    theReport.push({ "desc": "oscillation-troughs", "value": troughs });
+    theReport.push({ desc: "oscillation-freq", value: frequency });
+    theReport.push({ desc: "oscillation-amp", value: avgAmplitude });
+    theReport.push({ desc: "oscillation-peaks", value: peaks });
+    theReport.push({ desc: "oscillation-troughs", value: troughs });
 
     // Determine update rate based on acceleration
     const arrX = wit.history.raw.ay.slice(-4);
@@ -87,12 +87,12 @@ class AnalyseData {
       radians(wit.getData().pitch),
       radians(wit.getData().yaw),
     );
-    const rx = (v0.roll % Math.PI * 2).toFixed(2);
-    const ry = (v0.pitch % Math.PI * 2).toFixed(2);
-    const rz = (v0.yaw % Math.PI * 2).toFixed(2);
-    theReport.push({ "desc": `witmotion-${witId} roll`, "value": rx });
-    theReport.push({ "desc": `witmotion-${witId} pitch`, "value": ry });
-    theReport.push({ "desc": `witmotion-${witId} yaw`, "value": rz });
+    const rx = ((v0.roll % Math.PI) * 2).toFixed(2);
+    const ry = ((v0.pitch % Math.PI) * 2).toFixed(2);
+    const rz = ((v0.yaw % Math.PI) * 2).toFixed(2);
+    theReport.push({ desc: `witmotion-${witId} roll`, value: rx });
+    theReport.push({ desc: `witmotion-${witId} pitch`, value: ry });
+    theReport.push({ desc: `witmotion-${witId} yaw`, value: rz });
   }
 
   _countSignChanges(arr) {
@@ -101,7 +101,8 @@ class AnalyseData {
     let end = arr.length;
     for (let i = start; i < end; i++) {
       if (
-        Math.sign(arr[i]) !== 0 && Math.sign(arr[i]) !== Math.sign(arr[i - 1])
+        Math.sign(arr[i]) !== 0 &&
+        Math.sign(arr[i]) !== Math.sign(arr[i - 1])
       ) {
         count++;
       }
@@ -171,15 +172,17 @@ class AnalyseData {
     for (let i = start; i < end; i++) {
       // Peak: higher than neighbors by at least threshold
       if (
-        arr[i] > arr[i - 1] && arr[i] > arr[i + 1] &&
-        (arr[i] - Math.min(arr[i - 1], arr[i + 1]) > threshold)
+        arr[i] > arr[i - 1] &&
+        arr[i] > arr[i + 1] &&
+        arr[i] - Math.min(arr[i - 1], arr[i + 1]) > threshold
       ) {
         peaks.push({ index: i, value: arr[i] });
       }
       // Trough: lower than neighbors by at least threshold
       if (
-        arr[i] < arr[i - 1] && arr[i] < arr[i + 1] &&
-        (Math.max(arr[i - 1], arr[i + 1]) - arr[i] > threshold)
+        arr[i] < arr[i - 1] &&
+        arr[i] < arr[i + 1] &&
+        Math.max(arr[i - 1], arr[i + 1]) - arr[i] > threshold
       ) {
         troughs.push({ index: i, value: arr[i] });
       }
