@@ -59,7 +59,7 @@ This is a modified version from branch 'perform-auto-play' to receive data from 
 - OSC-compatible software to receive data (e.g., Max/MSP, TouchDesigner, Processing)
 
 ## How to run
-1. Clone the repository: `git clone https://github.com/sojamo/perform-motion.git`
+1. Clone the repository: `git clone https://github.com/sojamo/perform-motion.git` alternatively download the [zip file](https://github.com/sojamo/perform-motion/archive/refs/heads/unnatural-project.zip) from the releases page and extract it
 2. Navigate to the project directory: `cd perform-motion`
 3. Install dependencies: `npm install`
 4. Configure sensors in `config.js` (see [Finding Sensor UUIDs](#finding-sensor-uuids))
