@@ -10,13 +10,13 @@ export default class WebService {
   start() {
     const app = express();
     const dir = path.resolve(this.directory);
-    const port = this.port; 
+    const port = this.port;
     app.use(express.static(dir));
-    const server = app.listen(port, '0.0.0.0', () => {
+    const server = app.listen(port, "0.0.0.0", () => {
       console.log(`
       Static server running at http://0.0.0.0:${port}
-      serving from folder ${this.directory} 
-      open from LAN at http://<your-lan-ip>:${port}
+      serving from folder ${this.directory}
+      open from LAN at http://0.0.0.0:${port}
       `);
     });
   }
