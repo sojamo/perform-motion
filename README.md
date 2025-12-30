@@ -77,6 +77,7 @@ This is a modified version from branch 'perform-auto-play' to receive data from 
 
 ### No OSC Data Received
 - Verify OSC receiver is listening on port 12000
+- run the python script `bin/test/test-osc.py` to test-listen on port 12000
 - Check firewall settings allow localhost communication
 - Confirm sensor is connected via the debug interface
 
