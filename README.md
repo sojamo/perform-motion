@@ -56,7 +56,7 @@ This is a modified version from branch 'perform-auto-play' to receive data from 
 - Node.js 23.x or higher
 - macOS, Linux, or Windows with Bluetooth support
 - WT901BLE67 WitMotion sensor(s)
-- OSC-compatible software to receive data (e.g., Max/MSP, TouchDesigner, SuperCollider)
+- OSC-compatible software to receive data (e.g., Max/MSP, TouchDesigner, Processing)
 
 ## How to run
 1. Clone the repository: `git clone https://github.com/sojamo/perform-motion.git`
